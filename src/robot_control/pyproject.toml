@@ -1,0 +1,11 @@
+[project]
+name = "robot-control"
+version = "0.1.0"
+description = "Robot control and monitoring scripts for humanoid-sim"
+requires-python = ">=3.12"
+dependencies = [
+    "rich>=14.3.3",
+]
+
+[project.scripts]
+robot-monitor = "robot_monitor:main"
