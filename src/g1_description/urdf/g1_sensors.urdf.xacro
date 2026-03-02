@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+       name="g1_23dof_with_sensors">
+
+  <!--
+    Include the Unitree G1 base URDF.
+    Mesh paths have been fixed to use package:// URIs via sed post-processing
+    at copy time (see Step 3 in the setup instructions).
+  -->
+  <xacro:include filename="$(find g1_description)/urdf/g1_23dof_base.urdf"/>
+
+  <!-- ================================================================
+       WORLD FIXED JOINT
+       Fix the robot pelvis to a virtual "world" link so the robot
+       holds its spawn position with no dynamics. joint_state_publisher
+       broadcasts all 23 DOF at zero position.
+       z=0.79: approximate pelvis height when G1 legs are straight.
+       Adjust if the robot clips into the ground on first launch.
+       ================================================================ -->
+  <link name="world"/>
+
+  <joint name="world_to_pelvis" type="fixed">
+    <parent link="world"/>
+    <child link="pelvis"/>
+    <origin xyz="0 0 0.79" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================================================================
+       SENSOR 1: 2D LiDAR → /scan (sensor_msgs/LaserScan)
+       New link on torso front for a dedicated horizontal laser scanner.
+       mid360_link is reserved for the 3D LiDAR below.
+       ================================================================ -->
+  <link name="lidar_2d_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.04"/>
+      </geometry>
+      <material name="dark_grey">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0"
+               iyy="4.2e-5" iyz="0"
+               izz="8.0e-5"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_2d_joint" type="fixed">
+    <parent link="torso_link"/>
+    <child link="lidar_2d_link"/>
+    <!-- Chest-front position, scanning a horizontal plane -->
+    <origin xyz="0.07 0 0.25" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="lidar_2d_link">
+    <sensor name="lidar_2d" type="ray">
+      <always_on>true</always_on>
+      <update_rate>15</update_rate>
+      <pose>0 0 0 0 0 0</pose>
+      <ray>
+        <scan>
+          <horizontal>
+            <!-- 360-degree scan at 0.5 degree resolution -->
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159265</min_angle>
+            <max_angle>3.14159265</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="lidar_2d_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>lidar_2d_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ================================================================
+       SENSOR 2: 3D LiDAR → /points (sensor_msgs/PointCloud2)
+       Uses mid360_link already defined in the Unitree base URDF
+       (attached to torso_link at the top of the torso).
+       ================================================================ -->
+  <gazebo reference="mid360_link">
+    <sensor name="lidar_3d" type="ray">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <pose>0 0 0 0 0 0</pose>
+      <ray>
+        <scan>
+          <horizontal>
+            <!-- Full 360-degree horizontal coverage -->
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159265</min_angle>
+            <max_angle>3.14159265</max_angle>
+          </horizontal>
+          <vertical>
+            <!-- Approximate Livox Mid360 vertical FOV: ±30 degrees -->
+            <samples>32</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.5236</min_angle>
+            <max_angle>0.5236</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>40.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.008</stddev>
+        </noise>
+      </ray>
+      <plugin name="lidar_3d_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=points</remapping>
+        </ros>
+        <output_type>sensor_msgs/PointCloud2</output_type>
+        <frame_name>mid360_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ================================================================
+       SENSOR 3: RGB Camera → /camera/image_raw
+       Uses d435_link already defined in the Unitree base URDF
+       (front face of torso, near head level).
+       ================================================================ -->
+  <gazebo reference="d435_link">
+    <sensor name="rgb_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <camera name="camera">
+        <!-- 80-degree horizontal FOV, matching Intel RealSense D435 -->
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_plugin" filename="libgazebo_ros_camera.so">
+        <ros>
+          <remapping>image_raw:=camera/image_raw</remapping>
+          <remapping>camera_info:=camera/camera_info</remapping>
+        </ros>
+        <camera_name>camera</camera_name>
+        <frame_name>d435_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ================================================================
+       SENSOR 3b: Depth Camera → /camera/depth/image_raw + /camera/depth/points
+       Second sensor on d435_link (same physical unit, depth channel).
+       Range: 0.1–10 m, matching Intel RealSense D435 depth range.
+       ================================================================ -->
+  <gazebo reference="d435_link">
+    <sensor name="d435_depth" type="depth">
+      <always_on>true</always_on>
+      <update_rate>15</update_rate>
+      <camera name="depth_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R32F</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>10.0</far>
+        </clip>
+      </camera>
+      <plugin name="depth_camera_plugin" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/camera</namespace>
+        </ros>
+        <camera_name>depth</camera_name>
+        <frame_name>d435_link</frame_name>
+        <min_depth>0.1</min_depth>
+        <max_depth>10.0</max_depth>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ================================================================
+       SENSOR 4: IMU → /imu/data (sensor_msgs/Imu)
+       Uses imu_in_pelvis already defined in the Unitree base URDF
+       (inside the pelvis, near the center of mass).
+       ================================================================ -->
+  <gazebo reference="imu_in_pelvis">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+          <remapping>~/out:=imu/data</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+        <frame_name>imu_in_pelvis</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

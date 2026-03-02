@@ -1,0 +1,26 @@
+# ROS2 colcon build artifacts
+build/
+install/
+log/
+
+# Bag recordings
+bags/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker env (contains host-specific DISPLAY var)
+.env

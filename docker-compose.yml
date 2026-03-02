@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  sim:
+    build: .
+    image: sim_robo:humble
+    container_name: sim_robo
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - GAZEBO_MODEL_PATH=/workspace/src
+      - LIBGL_ALWAYS_SOFTWARE=1
+      - MESA_GL_VERSION_OVERRIDE=3.3
+      - GALLIUM_DRIVER=softpipe
+    volumes:
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - gazebo-cache:/root/.gazebo
+    network_mode: host
+    stdin_open: true
+    tty: true
+
+volumes:
+  gazebo-cache:
+    external: true
+    name: sim_robo_gazebo-cache

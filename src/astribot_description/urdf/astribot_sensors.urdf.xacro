@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<!--
+  Sensor wrapper for the Astribot S1.
+
+  Adds:
+    • world_to_base_link  — fixed joint that anchors the robot (z=0.12 m above ground,
+                            adjust if the base clips through the floor after visual inspection)
+    • lidar_2d_link       — 2D LiDAR  → /scan       (LaserScan,  ~15 Hz)
+    • mid360_link         — 3D LiDAR  → /points     (PointCloud2, ~10 Hz)
+    • d435_link           — RGB Camera → /camera/image_raw (~30 Hz)
+    • imu_link            — IMU        → /imu/data   (~200 Hz)
+
+  Sensor placement (relative to torso_link_4):
+    lidar_2d   (0.06,  0,  0.05)  — front face of torso top
+    mid360     (0.0,   0,  0.20)  — above torso top
+    d435       (0.07,  0,  0.15)  — front of torso top, facing forward
+    imu        attached to base_link (chassis)
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="astribot_s1">
+
+  <!-- Base URDF (copied from fiveages-sim/robot_descriptions with mesh paths fixed) -->
+  <xacro:include filename="$(find astribot_description)/urdf/astribot_s1_base.urdf"/>
+
+  <!-- ─── World anchor ─────────────────────────────────────────── -->
+  <link name="world"/>
+
+  <joint name="world_to_base_link" type="fixed">
+    <parent link="world"/>
+    <child  link="base_link"/>
+    <!-- z=0.12: approximate wheel radius — adjust after visual inspection -->
+    <origin xyz="0 0 0.12" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ─── 2D LiDAR link ────────────────────────────────────────── -->
+  <link name="lidar_2d_link">
+    <visual>
+      <geometry><cylinder radius="0.04" length="0.04"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1"/></material>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.04" length="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <joint name="torso_to_lidar_2d" type="fixed">
+    <parent link="torso_link_4"/>
+    <child  link="lidar_2d_link"/>
+    <origin xyz="0.06 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ─── 3D LiDAR link ────────────────────────────────────────── -->
+  <link name="mid360_link">
+    <visual>
+      <geometry><cylinder radius="0.04" length="0.04"/></geometry>
+      <material name="grey"><color rgba="0.5 0.5 0.5 1"/></material>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.04" length="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <joint name="torso_to_mid360" type="fixed">
+    <parent link="torso_link_4"/>
+    <child  link="mid360_link"/>
+    <origin xyz="0.0 0 0.20" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ─── RGB Camera link ──────────────────────────────────────── -->
+  <link name="d435_link">
+    <visual>
+      <geometry><box size="0.025 0.090 0.025"/></geometry>
+      <material name="blue"><color rgba="0.2 0.2 0.8 1"/></material>
+    </visual>
+    <collision>
+      <geometry><box size="0.025 0.090 0.025"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.072"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <joint name="torso_to_d435" type="fixed">
+    <parent link="torso_link_4"/>
+    <child  link="d435_link"/>
+    <origin xyz="0.07 0 0.15" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ─── IMU link ─────────────────────────────────────────────── -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <joint name="base_to_imu" type="fixed">
+    <parent link="base_link"/>
+    <child  link="imu_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  Gazebo sensor plugins                                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <!-- 2D LiDAR → /scan -->
+  <gazebo reference="lidar_2d_link">
+    <sensor name="lidar_2d" type="ray">
+      <always_on>true</always_on>
+      <update_rate>15</update_rate>
+      <visualize>false</visualize>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="lidar_2d_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros><remapping>~/out:=/scan</remapping></ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>lidar_2d_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 3D LiDAR → /points -->
+  <gazebo reference="mid360_link">
+    <sensor name="mid360" type="ray">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <visualize>false</visualize>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>30</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.5236</min_angle>
+            <max_angle>0.5236</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>40.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="mid360_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros><remapping>~/out:=/points</remapping></ros>
+        <output_type>sensor_msgs/PointCloud2</output_type>
+        <frame_name>mid360_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- RGB Camera → /camera/image_raw -->
+  <gazebo reference="d435_link">
+    <sensor name="d435_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <visualize>false</visualize>
+      <camera>
+        <horizontal_fov>1.2217</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip><near>0.02</near><far>100.0</far></clip>
+      </camera>
+      <plugin name="camera_plugin" filename="libgazebo_ros_camera.so">
+        <camera_name>camera</camera_name>
+        <frame_name>d435_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Depth Camera → /camera/depth/image_raw + /camera/depth/points -->
+  <gazebo reference="d435_link">
+    <sensor name="d435_depth" type="depth">
+      <always_on>true</always_on>
+      <update_rate>15</update_rate>
+      <visualize>false</visualize>
+      <camera name="depth_camera">
+        <horizontal_fov>1.2217</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R32F</format>
+        </image>
+        <clip><near>0.1</near><far>10.0</far></clip>
+      </camera>
+      <plugin name="depth_camera_plugin" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/camera</namespace>
+        </ros>
+        <camera_name>depth</camera_name>
+        <frame_name>d435_link</frame_name>
+        <min_depth>0.1</min_depth>
+        <max_depth>10.0</max_depth>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- IMU → /imu/data -->
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros><remapping>~/out:=/imu/data</remapping></ros>
+        <frame_name>imu_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
