@@ -138,6 +138,22 @@ First launch takes ~90 s for gzserver to initialize (software rendering, no GPU)
 
 ---
 
+## Python scripts (optional)
+
+The `src/robot_control/` directory contains Python scripts using [uv](https://docs.astral.sh/uv/) for package management.
+
+### Robot monitor example
+
+```bash
+# Inside the container
+cd /workspace/src/robot_control
+uv run robot_monitor.py
+```
+
+This displays a live dashboard of sensor data (camera, IMU, LiDAR) and demonstrates basic joint control.
+
+---
+
 ## Project structure
 
 ```
@@ -151,7 +167,8 @@ humanoid-sim/
     ├── g1_gazebo/                 # Gazebo world
     ├── astribot_description/      # Astribot S1 URDF, meshes, sensor XACRO
     ├── sim_gazebo/                # Unified multi-robot launcher
-    └── g1_apps/                   # Template subscriber and joint controller nodes
+    ├── g1_apps/                   # Template subscriber and joint controller nodes
+    └── robot_control/             # Python scripts with uv (sensor monitor, control examples)
 ```
 
 ---
