@@ -1,8 +1,12 @@
 # humanoid-sim
 
-ROS2 Humble + Gazebo Classic simulation for humanoid robots, containerized for macOS (Docker).
+**humanoid-sim** is a turnkey ROS2 simulation environment for humanoid robots, designed to run entirely inside Docker on macOS with no native ROS installation required.
 
-Supports **Unitree G1** and **Astribot S1** out of the box. Adding a new robot requires one config entry and a sensor XACRO.
+It currently supports the **Unitree G1** and **Astribot S1**, and is built to extend — adding a new robot takes one config entry and a sensor XACRO file. Each robot is equipped with five fully functional sensors out of the box: a 2D LiDAR, a 3D LiDAR, an RGB camera, a depth camera with point cloud output, and an IMU — all publishing on standard ROS2 topic names and message types.
+
+The focus is on **sensor data workflows**: collecting, recording, and processing perception data in simulation before deploying to hardware. Bags can be recorded in MCAP or SQLite3 format directly from the launch command. Because all topics use standard `sensor_msgs` types and the same names as the physical robots, code written against the simulation runs on real hardware without modification — only `use_sim_time:=false` needs to change.
+
+---
 
 Each robot ships with five sensors:
 
