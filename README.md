@@ -6,6 +6,9 @@ It currently supports the **Unitree G1** and **Astribot S1**, and is built to ex
 
 The focus is on **sensor data workflows**: collecting, recording, and processing perception data in simulation before deploying to hardware. Bags can be recorded in MCAP or SQLite3 format directly from the launch command. Because all topics use standard `sensor_msgs` types and the same names as the physical robots, code written against the simulation runs on real hardware without modification — only `use_sim_time:=false` needs to change.
 
+![Robot Monitor](figures/print_out.png)
+*Live sensor monitoring and robot control using the included Python scripts*
+
 ---
 
 Each robot ships with five sensors:
@@ -24,88 +27,137 @@ Each robot ships with five sensors:
 
 ## Prerequisites
 
-| Tool | Install |
-|------|---------|
-| [Docker Desktop](https://www.docker.com/products/docker-desktop) | Required |
-| [XQuartz](https://www.xquartz.org) | Only if you want the Gazebo GUI |
+| Tool | Purpose | Install |
+|------|---------|---------|
+| [Docker Desktop](https://www.docker.com/products/docker-desktop) | Run ROS2 simulation | **Required** |
+| [XQuartz](https://www.xquartz.org) | Display Gazebo GUI | Optional (GUI only) |
+| [uv](https://docs.astral.sh/uv/) | Python package manager | Optional (Python scripts) |
 
-**XQuartz one-time setup** (GUI only):
-1. After install: XQuartz → Preferences → Security → ✓ *Allow connections from network clients*
-2. Log out and back in
+**XQuartz one-time setup** (if using GUI):
+1. Install XQuartz from the link above
+2. Open XQuartz → Preferences → Security
+3. Check ✓ *Allow connections from network clients*
+4. **Log out and back in** to macOS for the setting to take effect
+
+**uv installation** (if running Python scripts):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 ---
 
 ## Setup
 
-### 1. Clone
+This is a complete first-time setup guide. Each step only needs to be run once.
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/fortyfive-labs/humanoid-sim.git
 cd humanoid-sim
 ```
 
-### 2. Build the Docker image
-
-```bash
-docker compose build
-```
-
-First build takes ~5–10 min. Subsequent builds are cached.
-
-### 3. Create the Gazebo model cache volume
+### 2. Create the Gazebo cache volume
 
 ```bash
 docker volume create sim_robo_gazebo-cache
 ```
 
-This persists Gazebo's downloaded model database across container restarts. Without it, the first launch takes ~8 min every time.
+This Docker volume persists Gazebo's model database between container restarts. **Without this**, Gazebo will re-download ~300MB of models on every launch (takes ~8 minutes). With it, only the first launch is slow.
 
-### 4. Build the ROS2 packages
+### 3. Build the Docker image
+
+```bash
+docker compose build
+```
+
+This builds an Ubuntu 22.04 image with ROS2 Humble, Gazebo Classic 11, and all dependencies. First build takes **~5–10 minutes**. Subsequent builds use cached layers and are much faster.
+
+### 4. Build the ROS2 workspace
 
 ```bash
 # Start the container
 docker compose run --rm sim bash
 
-# Inside the container
+# Inside the container - you'll see the prompt change to root@<container-id>
 cd /workspace
 colcon build
+
+# Source the built packages
 source install/setup.bash
 ```
 
----
+The `colcon build` command compiles the C++ and Python ROS2 packages in `src/`. This step takes ~30 seconds and only needs to be repeated if you modify the package source code.
 
-## Launching
+**What gets built:**
+- `g1_description` and `astribot_description` - Robot URDF models with sensors
+- `g1_gazebo` - Gazebo world files
+- `sim_gazebo` - Multi-robot launch system
+- `g1_apps` - Example C++ nodes for subscribing and control
 
-> **Before every session**, run on the macOS host:
-> ```bash
-> xhost +localhost
-> ```
+### 5. (Optional) Install Python dependencies
+
+If you want to run the Python monitoring and control scripts:
 
 ```bash
-# Start the container (if not already inside)
-docker compose run --rm sim bash
-
-# Source the workspace (inside container)
-source /opt/ros/humble/setup.bash
-source /workspace/install/setup.bash
+# Inside the container (or on macOS if running scripts locally)
+cd /workspace
+uv sync
 ```
 
-### Launch commands
+This installs pure Python dependencies like `rich` (terminal UI library). ROS2 packages (`rclpy`, `sensor_msgs`) come from the system installation and don't need to be installed separately.
+
+---
+
+## Launching the Simulation
+
+### Quick start
 
 ```bash
-# Unitree G1 (default)
+# Step 1: Enable X11 forwarding (only needed if using GUI)
+# Run this on macOS BEFORE starting Docker:
+xhost +localhost
+
+# Step 2: Start and enter the container
+docker compose run --rm sim bash
+
+# Step 3: Inside the container - source ROS2 and workspace
+source /opt/ros/humble/setup.bash
+source /workspace/install/setup.bash
+
+# Step 4: Launch the simulation
+ros2 launch sim_gazebo sim.launch.py
+```
+
+The Gazebo GUI window should appear on your macOS desktop. **First launch takes ~90 seconds** while gzserver initializes (software rendering, no GPU acceleration). Subsequent launches are faster (~10 seconds).
+
+Topics start publishing after the robot spawns. You can verify them with `ros2 topic list`.
+
+### Launch command reference
+
+```bash
+# Unitree G1 with GUI (default)
 ros2 launch sim_gazebo sim.launch.py
 
-# Astribot S1
+# Astribot S1 with GUI
 ros2 launch sim_gazebo sim.launch.py robot:=astribot
 
-# Headless (no GUI window)
-ros2 launch sim_gazebo sim.launch.py robot:=astribot gui:=false
+# Headless mode (no GUI window, faster startup)
+ros2 launch sim_gazebo sim.launch.py gui:=false
 
-# Record sensor data to an MCAP bag
-ros2 launch sim_gazebo sim.launch.py robot:=astribot record:=true
+# Start paused (useful for debugging)
+ros2 launch sim_gazebo sim.launch.py paused:=true
 
-# RViz2 preview only (no Gazebo)
+# Record all sensor topics to MCAP bag file
+ros2 launch sim_gazebo sim.launch.py record:=true
+
+# Record to SQLite3 format instead
+ros2 launch sim_gazebo sim.launch.py record:=true bag_format:=sqlite3
+
+# Custom bag output path
+ros2 launch sim_gazebo sim.launch.py record:=true bag_path:=/workspace/bags/my_experiment.mcap
+
+# RViz2 robot preview only (no physics simulation)
 ros2 launch g1_description display.launch.py
 ros2 launch astribot_description display.launch.py
 ```
@@ -125,16 +177,118 @@ Bags are saved to `bags/` in the repo root (volume-mounted, visible on macOS).
 
 ---
 
-## Verifying topics
+## Verifying Topics
+
+After launching the simulation, you can inspect the ROS2 topics to verify everything is working.
 
 ```bash
-# Inside the container
+# List all available topics
 ros2 topic list
+
+# Echo messages from a topic (Ctrl+C to stop)
 ros2 topic echo /scan
-ros2 topic hz /imu/data
+ros2 topic echo /imu/data
+ros2 topic echo /camera/image_raw --no-arr  # --no-arr hides large binary data
+
+# Check topic publish rate
+ros2 topic hz /camera/image_raw
+ros2 topic hz /points
+
+# Show topic message type
+ros2 topic info /scan
+ros2 topic info /camera/depth/points
+
+# Display topic metadata
+ros2 topic info /imu/data --verbose
 ```
 
-First launch takes ~90 s for gzserver to initialize (software rendering, no GPU). Topics appear after the robot spawns.
+**Expected output:**
+
+All sensor topics should publish at the following rates:
+- `/camera/image_raw` - 30 Hz
+- `/camera/depth/image_raw` - 30 Hz
+- `/camera/depth/points` - 30 Hz
+- `/imu/data` - 100 Hz
+- `/scan` - 40 Hz (2D LiDAR)
+- `/points` - 10 Hz (3D LiDAR)
+- `/joint_states` - 50 Hz
+
+If topics aren't appearing, wait ~90 seconds for gzserver to fully initialize on first launch. The robot model must spawn before sensors activate.
+
+---
+
+## Python Scripts
+
+The `src/robot_control/` directory contains Python scripts for monitoring and controlling robots. These demonstrate how to:
+- Subscribe to ROS2 sensor topics (`/camera/image_raw`, `/imu/data`, `/scan`, `/points`)
+- Publish joint commands to `/joint_states`
+- Create live-updating terminal UIs with the Rich library
+- Structure a ROS2 Python node with multi-threaded callbacks
+
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) at the project root.
+
+### Robot Monitor Script
+
+The `robot_monitor.py` script creates a live-updating dashboard that displays:
+- 📷 RGB camera feed metadata (resolution, encoding, update rate)
+- 🔲 Depth camera data (resolution, encoding)
+- 📡 IMU acceleration values
+- 📊 2D LiDAR scan statistics (ray count, distance range)
+- 🗺️ 3D LiDAR point cloud info (point count, frame)
+- 👋 Joint control output (wave motion command)
+
+The script also sends sinusoidal joint commands to make the robot wave its right arm as a demonstration of control.
+
+**Running inside Docker:**
+
+```bash
+# Terminal 1: Launch the simulation
+docker compose run --rm sim bash
+source /opt/ros/humble/setup.bash
+source /workspace/install/setup.bash
+ros2 launch sim_gazebo sim.launch.py gui:=false
+
+# Terminal 2: Run the monitor (in a separate container)
+docker compose exec sim bash
+cd /workspace
+uv sync  # First time only
+python3 src/robot_control/robot_monitor.py
+```
+
+**Running locally on macOS:**
+
+You can run the Python script natively on macOS while the simulation runs in Docker. This is useful for faster iteration and better terminal integration.
+
+```bash
+# Terminal 1: Start simulation in Docker
+docker compose up -d
+docker compose exec sim bash -c "source /opt/ros/humble/setup.bash && source /workspace/install/setup.bash && ros2 launch sim_gazebo sim.launch.py gui:=false"
+
+# Terminal 2: Run monitor on macOS
+# One-time setup (see RUNNING_LOCAL.md for full details):
+conda create -n ros2 python=3.10
+conda activate ros2
+conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-sensor-msgs
+uv sync
+
+# Every session:
+conda activate ros2
+export ROS_DOMAIN_ID=42
+python3 src/robot_control/robot_monitor.py
+```
+
+The monitor will show a live table that updates at 10 Hz. Press `Ctrl+C` to exit.
+
+See [RUNNING_LOCAL.md](RUNNING_LOCAL.md) for complete instructions on setting up ROS2 on macOS with conda.
+
+### Scripts included
+
+| Script | Description |
+|--------|-------------|
+| `robot_monitor.py` | Live sensor dashboard + simple arm wave control |
+| `run.sh` | Convenience wrapper that runs `uv sync` then launches the monitor |
+
+All scripts are standalone with inline PEP 723 dependency declarations, so they can be run with `uv run --system script.py` if preferred.
 
 ---
 
@@ -151,7 +305,8 @@ humanoid-sim/
     ├── g1_gazebo/                 # Gazebo world
     ├── astribot_description/      # Astribot S1 URDF, meshes, sensor XACRO
     ├── sim_gazebo/                # Unified multi-robot launcher
-    └── g1_apps/                   # Template subscriber and joint controller nodes
+    ├── g1_apps/                   # Template subscriber and joint controller nodes
+    └── robot_control/             # Python scripts with uv (sensor monitor, control examples)
 ```
 
 ---

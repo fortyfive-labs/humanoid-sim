@@ -1,0 +1,14 @@
+[project]
+name = "humanoid-sim"
+version = "0.1.0"
+description = "ROS2 humanoid robot simulation with Python control scripts"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=14.3.3",
+]
+
+[tool.uv]
+# ROS2 packages (rclpy, sensor_msgs) come from system installation
+# This project only manages pure Python dependencies like rich
+package = false  # Not a Python package, just dependency management

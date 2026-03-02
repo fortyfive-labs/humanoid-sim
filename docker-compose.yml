@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   sim:
     build: .
@@ -12,11 +10,14 @@ services:
       - LIBGL_ALWAYS_SOFTWARE=1
       - MESA_GL_VERSION_OVERRIDE=3.3
       - GALLIUM_DRIVER=softpipe
+      - ROS_DOMAIN_ID=42
     volumes:
       - .:/workspace
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - gazebo-cache:/root/.gazebo
-    network_mode: host
+    ports:
+      - "11311:11311"  # ROS Master (if using ROS1 bridge)
+      - "7400-7500:7400-7500/udp"  # DDS Discovery and Data
     stdin_open: true
     tty: true
 
