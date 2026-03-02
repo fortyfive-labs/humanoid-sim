@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "rich>=14.3.3",
+# ]
+# ///
 """
-simple_robot_control.py — Basic robot interaction demo
+robot_monitor.py — Basic robot interaction demo
 
 This script demonstrates:
 1. Reading sensor data (IMU, camera, LiDAR, depth)
@@ -9,10 +15,7 @@ This script demonstrates:
 
 Usage:
     # Inside the Docker container, after launching the simulation:
-    python3 simple_robot_control.py
-
-    # Or install it as a ROS2 node and run:
-    # ros2 run g1_apps simple_robot_control
+    uv run --with-requirements <(echo rich) --system robot_monitor.py
 """
 
 import math
@@ -54,7 +57,7 @@ class SimpleRobotController(Node):
             'imu': {'time': None, 'shape': None, 'count': 0},
             'lidar_2d': {'time': None, 'shape': None, 'count': 0},
             'lidar_3d': {'time': None, 'shape': None, 'count': 0},
-            'control': {'time': None, 'shape': None, 'angle': 0.0},
+            'control': {'time': None, 'shape': None, 'count': 0, 'angle': 0.0},
         }
 
         # Subscribe to sensors
@@ -145,14 +148,15 @@ class SimpleRobotController(Node):
             self._sensor_data['control']['time'] = datetime.now()
             self._sensor_data['control']['angle'] = wave_angle
             self._sensor_data['control']['shape'] = f"wave={wave_angle:.3f} rad, joints=3"
+            self._sensor_data['control']['count'] += 1
 
     def get_display_table(self) -> Table:
         """Generate the rich table for display"""
         table = Table(title="🤖 Robot Sensor Monitor & Control", show_header=True, header_style="bold magenta")
-        table.add_column("Topic", style="cyan", width=20)
-        table.add_column("Last Update", style="green", width=12)
-        table.add_column("Message Count", style="yellow", width=14)
-        table.add_column("Shape / Data", style="white", width=50)
+        table.add_column("Topic", style="cyan", width=30)
+        table.add_column("Last Update", style="green", width=15)
+        table.add_column("Message Count", style="yellow", width=15)
+        table.add_column("Shape / Data", style="white", width=60)
 
         with self._lock:
             # Camera

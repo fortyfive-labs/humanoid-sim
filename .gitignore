@@ -11,6 +11,8 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .eggs/
+.venv/
+venv/
 
 # macOS
 .DS_Store
