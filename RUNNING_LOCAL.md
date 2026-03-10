@@ -39,9 +39,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ## Running Locally
 
 ```bash
-# Terminal 1: Start simulation in Docker
-docker compose up -d
-docker compose exec sim bash -c "source /opt/ros/humble/setup.bash && source /workspace/install/setup.bash && ros2 launch sim_gazebo sim.launch.py gui:=false"
+# Terminal 1: Start simulation in Docker (headless — no GUI needed for monitor)
+docker compose run --service-ports sim bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  ros2 launch sim_gazebo sim.launch.py gui:=false"
 
 # Terminal 2: Run monitor locally on macOS
 conda activate ros2
@@ -59,18 +61,25 @@ python3 src/robot_control/robot_monitor.py
 
 ## Alternative: Use Docker Exec (No Local Install)
 
-If you don't want to install ROS2 locally:
+If you don't want to install ROS2 locally, run everything inside the container:
 
 ```bash
-# After starting the simulation
-docker exec -it sim_robo bash -c "cd /workspace/src/robot_control && uv run --system robot_monitor.py"
+# Terminal 1: Start simulation (with or without GUI)
+docker compose run --service-ports sim bash /workspace/start_sim.sh
+
+# Terminal 2: Run the monitor inside the same container
+docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  cd /workspace && python3 src/robot_control/robot_monitor.py"
 ```
 
 ## Networking Notes
 
-- The docker-compose.yml exposes ports 7400-7500 for DDS communication
+- The `docker-compose.yml` exposes ports 7400-7500 for DDS communication
 - Both the container and host use `ROS_DOMAIN_ID=42` to communicate
 - DDS discovery should work automatically over UDP multicast
+- The `--service-ports` flag is required with `docker compose run` to publish ports
 
 ## Troubleshooting
 

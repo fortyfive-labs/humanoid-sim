@@ -30,14 +30,15 @@ Each robot ships with five sensors:
 | Tool | Purpose | Install |
 |------|---------|---------|
 | [Docker Desktop](https://www.docker.com/products/docker-desktop) | Run ROS2 simulation | **Required** |
-| [XQuartz](https://www.xquartz.org) | Display Gazebo GUI | Optional (GUI only) |
+| [TigerVNC Viewer](https://tigervnc.org) | View Gazebo GUI | Optional (GUI only) |
 | [uv](https://docs.astral.sh/uv/) | Python package manager | Optional (Python scripts) |
 
-**XQuartz one-time setup** (if using GUI):
-1. Install XQuartz from the link above
-2. Open XQuartz → Preferences → Security
-3. Check ✓ *Allow connections from network clients*
-4. **Log out and back in** to macOS for the setting to take effect
+**TigerVNC one-time setup** (if using GUI):
+```bash
+brew install --cask tigervnc-viewer
+```
+
+> **Note:** XQuartz X11 forwarding does not work for this simulation on Apple Silicon Macs — Gazebo's OpenGL renderer crashes when forwarded over XQuartz. The simulation uses an internal virtual display (Xvfb) with a VNC server instead.
 
 **uv installation** (if running Python scripts):
 ```bash
@@ -114,22 +115,13 @@ This installs pure Python dependencies like `rich` (terminal UI library). ROS2 p
 ### Quick start
 
 ```bash
-# Step 1: Enable X11 forwarding (only needed if using GUI)
-# Run this on macOS BEFORE starting Docker:
-xhost +localhost
-
-# Step 2: Start and enter the container
-docker compose run --rm sim bash
-
-# Step 3: Inside the container - source ROS2 and workspace
-source /opt/ros/humble/setup.bash
-source /workspace/install/setup.bash
-
-# Step 4: Launch the simulation
-ros2 launch sim_gazebo sim.launch.py
+# Start the simulation with VNC display
+docker compose run --service-ports sim bash /workspace/start_sim.sh
 ```
 
-The Gazebo GUI window should appear on your macOS desktop. **First launch takes ~90 seconds** while gzserver initializes (software rendering, no GPU acceleration). Subsequent launches are faster (~10 seconds).
+Then open **TigerVNC Viewer** and connect to `localhost:5900` — the Gazebo window will appear.
+
+**First launch takes ~90 seconds** while gzserver initializes (software rendering, no GPU acceleration). Subsequent launches are faster (~10 seconds).
 
 Topics start publishing after the robot spawns. You can verify them with `ros2 topic list`.
 
@@ -242,17 +234,18 @@ The script also sends sinusoidal joint commands to make the robot wave its right
 **Running inside Docker:**
 
 ```bash
-# Terminal 1: Launch the simulation
-docker compose run --rm sim bash
-source /opt/ros/humble/setup.bash
-source /workspace/install/setup.bash
-ros2 launch sim_gazebo sim.launch.py gui:=false
+# Terminal 1: Launch the simulation (headless, no VNC needed for monitor-only)
+docker compose run --service-ports sim bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  ros2 launch sim_gazebo sim.launch.py gui:=false"
 
-# Terminal 2: Run the monitor (in a separate container)
-docker compose exec sim bash
-cd /workspace
-uv sync  # First time only
-python3 src/robot_control/robot_monitor.py
+# Terminal 2: Run the monitor (exec into the running container)
+docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  cd /workspace && uv sync --quiet &&
+  python3 src/robot_control/robot_monitor.py"
 ```
 
 **Running locally on macOS:**
@@ -260,9 +253,11 @@ python3 src/robot_control/robot_monitor.py
 You can run the Python script natively on macOS while the simulation runs in Docker. This is useful for faster iteration and better terminal integration.
 
 ```bash
-# Terminal 1: Start simulation in Docker
-docker compose up -d
-docker compose exec sim bash -c "source /opt/ros/humble/setup.bash && source /workspace/install/setup.bash && ros2 launch sim_gazebo sim.launch.py gui:=false"
+# Terminal 1: Start simulation in Docker (headless)
+docker compose run --service-ports sim bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  ros2 launch sim_gazebo sim.launch.py gui:=false"
 
 # Terminal 2: Run monitor on macOS
 # One-time setup (see RUNNING_LOCAL.md for full details):

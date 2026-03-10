@@ -17,6 +17,8 @@ Adding a new robot:
 """
 
 import os
+import subprocess
+import tempfile
 from datetime import datetime
 
 from ament_index_python.packages import get_package_share_directory
@@ -84,6 +86,20 @@ def launch_setup(context, *args, **kwargs):
     )
     gazebo_ros_pkg = get_package_share_directory('gazebo_ros')
 
+    # Write the processed URDF to a temp file so Gazebo reads it once from disk.
+    # Using -topic causes Gazebo to re-parse /robot_description whenever a new
+    # subscriber (e.g. ros2 bag record) triggers a latched republish, producing
+    # a spurious "Could not find the 'robot' element" error in the gzserver log.
+    urdf_result = subprocess.run(
+        ['xacro', xacro_file], capture_output=True, text=True, check=True
+    )
+    urdf_tmp = tempfile.NamedTemporaryFile(
+        mode='w', suffix='.urdf', delete=False, prefix=f'{robot}_'
+    )
+    urdf_tmp.write(urdf_result.stdout)
+    urdf_tmp.flush()
+    urdf_tmp_path = urdf_tmp.name
+
     robot_description_content = ParameterValue(
         Command([FindExecutable(name='xacro'), ' ', xacro_file]),
         value_type=str,
@@ -121,7 +137,8 @@ def launch_setup(context, *args, **kwargs):
         parameters=[{'use_sim_time': use_sim_time_bool}, {'rate': 50}],
     )
 
-    # 4. Spawn robot
+    # 4. Spawn robot — use -file (pre-written URDF) instead of -topic so
+    # Gazebo only parses the model once and never reacts to later republishes.
     spawn_node = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
@@ -129,7 +146,7 @@ def launch_setup(context, *args, **kwargs):
         output='screen',
         arguments=[
             '-entity',  cfg['entity_name'],
-            '-topic',   '/robot_description',
+            '-file',    urdf_tmp_path,
             '-x', '0.0', '-y', '0.0', '-z', cfg['spawn_z'],
             '-R', '0.0', '-P', '0.0', '-Y', '0.0',
             '-timeout', '300',

@@ -20,6 +20,36 @@ python3 src/robot_control/robot_monitor.py
 ./src/robot_control/run.sh
 ```
 
+## Running with the Simulation
+
+**With GUI (VNC):**
+```bash
+# Terminal 1: Start simulation with VNC display
+docker compose run --service-ports sim bash /workspace/start_sim.sh
+# Connect TigerVNC to localhost:5900 to see Gazebo
+
+# Terminal 2: Run the monitor inside the container
+docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  cd /workspace && python3 src/robot_control/robot_monitor.py"
+```
+
+**Headless (no GUI):**
+```bash
+# Terminal 1: Start simulation without GUI
+docker compose run --service-ports sim bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  ros2 launch sim_gazebo sim.launch.py gui:=false"
+
+# Terminal 2: Run the monitor
+docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
+  source /opt/ros/humble/setup.bash &&
+  source /workspace/install/setup.bash &&
+  cd /workspace && python3 src/robot_control/robot_monitor.py"
+```
+
 ## Scripts
 
 ### robot_monitor.py

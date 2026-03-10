@@ -4,19 +4,16 @@ services:
     image: sim_robo:humble
     container_name: sim_robo
     environment:
-      - DISPLAY=${DISPLAY}
-      - QT_X11_NO_MITSHM=1
+      - DISPLAY=:99
       - GAZEBO_MODEL_PATH=/workspace/src
       - LIBGL_ALWAYS_SOFTWARE=1
-      - MESA_GL_VERSION_OVERRIDE=3.3
-      - GALLIUM_DRIVER=softpipe
+      - GALLIUM_DRIVER=llvmpipe
       - ROS_DOMAIN_ID=42
     volumes:
       - .:/workspace
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - gazebo-cache:/root/.gazebo
     ports:
-      - "11311:11311"  # ROS Master (if using ROS1 bridge)
+      - "5900:5900"                # VNC viewer
       - "7400-7500:7400-7500/udp"  # DDS Discovery and Data
     stdin_open: true
     tty: true

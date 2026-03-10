@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     mesa-utils \
     xvfb \
     x11-utils \
+    x11vnc \
  && rm -rf /var/lib/apt/lists/*
 
 # Install uv for Python package management
