@@ -9,6 +9,8 @@ Usage:
 """
 
 import os
+import subprocess
+import tempfile
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -51,7 +53,21 @@ def generate_launch_description():
     world_file = os.path.join(g1_gazebo_pkg, 'worlds', 'g1_world.world')
     xacro_file = os.path.join(g1_description_pkg, 'urdf', 'g1_sensors.urdf.xacro')
 
-    # Process XACRO → URDF string at launch time
+    # Write processed URDF to a temp file so Gazebo reads it once from disk.
+    # Using -topic causes Gazebo to re-parse /robot_description on every new
+    # subscriber (e.g. ros2 bag record), producing a spurious
+    # "Could not find the 'robot' element" error in the gzserver log.
+    urdf_result = subprocess.run(
+        ['xacro', xacro_file], capture_output=True, text=True, check=True
+    )
+    urdf_tmp = tempfile.NamedTemporaryFile(
+        mode='w', suffix='.urdf', delete=False, prefix='g1_'
+    )
+    urdf_tmp.write(urdf_result.stdout)
+    urdf_tmp.flush()
+    urdf_tmp_path = urdf_tmp.name
+
+    # robot_description still published via Command for robot_state_publisher / TF
     robot_description_content = ParameterValue(
         Command([FindExecutable(name='xacro'), ' ', xacro_file]),
         value_type=str,
@@ -84,7 +100,6 @@ def generate_launch_description():
     )
 
     # 3. joint_state_publisher — publishes all 23 DOF at zero position
-    #    (robot is fixed to world so no controllers are needed)
     joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
@@ -96,9 +111,8 @@ def generate_launch_description():
         ],
     )
 
-    # 4. Spawn the robot into Gazebo
-    #    z=0.0 because the world_to_pelvis joint in the XACRO already
-    #    offsets the pelvis to z=0.79 above the ground.
+    # 4. Spawn the robot — use -file instead of -topic so Gazebo only
+    #    parses the URDF once and ignores subsequent /robot_description republishes.
     spawn_entity_node = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
@@ -106,7 +120,7 @@ def generate_launch_description():
         output='screen',
         arguments=[
             '-entity', 'g1_robot',
-            '-topic', '/robot_description',
+            '-file', urdf_tmp_path,
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.0',

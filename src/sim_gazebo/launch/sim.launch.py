@@ -7,8 +7,8 @@ Usage:
     ros2 launch sim_gazebo sim.launch.py robot:=astribot
     ros2 launch sim_gazebo sim.launch.py robot:=g1 gui:=false
     ros2 launch sim_gazebo sim.launch.py robot:=astribot paused:=true
-    ros2 launch sim_gazebo sim.launch.py robot:=astribot record:=true
-    ros2 launch sim_gazebo sim.launch.py record:=true bag_path:=/workspace/bags/my_run
+    ros2 launch sim_gazebo sim.launch.py robot:=astribot rosbag:=true
+    ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/my_run
 
 Adding a new robot:
     1. Create src/<name>_description/ with urdf/<name>_sensors.urdf.xacro
@@ -46,7 +46,7 @@ ROBOT_CONFIGS = {
     },
 }
 
-# Topics recorded when record:=true
+# Topics recorded when rosbag:=true
 RECORD_TOPICS = [
     '/scan',
     '/points',
@@ -68,7 +68,7 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time_bool = use_sim_time.lower() == 'true'
     gui            = LaunchConfiguration('gui').perform(context)
     paused         = LaunchConfiguration('paused').perform(context)
-    record         = LaunchConfiguration('record').perform(context).lower() == 'true'
+    rosbag         = LaunchConfiguration('rosbag').perform(context).lower() == 'true'
     bag_path       = LaunchConfiguration('bag_path').perform(context)
     bag_format     = LaunchConfiguration('bag_format').perform(context)
 
@@ -156,7 +156,7 @@ def launch_setup(context, *args, **kwargs):
     actions = [gazebo, rsp_node, jsp_node, spawn_node]
 
     # 5. Optional bag recording
-    if record:
+    if rosbag:
         if not bag_path:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             bag_path = f'/workspace/bags/{robot}_{timestamp}'
@@ -184,7 +184,9 @@ def generate_launch_description():
                               description='Launch Gazebo GUI (gzclient)'),
         DeclareLaunchArgument('paused', default_value='false',
                               description='Start Gazebo paused'),
-        DeclareLaunchArgument('record', default_value='false',
+        # NOTE: named 'rosbag' (not 'record') to avoid collision with Gazebo's
+        # own --record flag which gzserver would pick up and crash with exit 255.
+        DeclareLaunchArgument('rosbag', default_value='false',
                               description='Record sensor topics to a rosbag'),
         DeclareLaunchArgument('bag_path', default_value='',
                               description='Output path for the bag (default: /workspace/bags/<robot>_<timestamp>)'),

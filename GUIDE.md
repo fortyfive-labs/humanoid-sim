@@ -73,10 +73,10 @@ source install/setup.bash
 | Argument | Default | Options | Description |
 |----------|---------|---------|-------------|
 | `robot` | `g1` | `g1`, `astribot` | Which robot to simulate |
-| `gui` | `true` | `true`, `false` | Show Gazebo window (requires XQuartz) |
+| `gui` | `true` | `true`, `false` | Show Gazebo window via VNC |
 | `paused` | `false` | `true`, `false` | Start Gazebo paused |
 | `use_sim_time` | `true` | `true`, `false` | Use Gazebo clock for all nodes |
-| `record` | `false` | `true`, `false` | Record sensor topics to a bag file |
+| `rosbag` | `false` | `true`, `false` | Record sensor topics to a bag file |
 | `bag_format` | `mcap` | `mcap`, `sqlite3` | Bag storage format |
 | `bag_path` | *(auto)* | any path | Custom bag output path |
 
@@ -93,10 +93,10 @@ ros2 launch sim_gazebo sim.launch.py robot:=astribot gui:=false
 ros2 launch sim_gazebo sim.launch.py robot:=g1 paused:=true
 
 # Astribot, headless, recording an MCAP bag
-ros2 launch sim_gazebo sim.launch.py robot:=astribot gui:=false record:=true
+ros2 launch sim_gazebo sim.launch.py robot:=astribot gui:=false rosbag:=true
 
 # G1 with a named bag path
-ros2 launch sim_gazebo sim.launch.py record:=true bag_path:=/workspace/bags/my_run
+ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/my_run
 ```
 
 ### RViz2 preview (no Gazebo)
@@ -217,13 +217,13 @@ client.terminate()
 
 ```bash
 # MCAP format (default) — auto-named: /workspace/bags/<robot>_<YYYYMMDD_HHMMSS>/
-ros2 launch sim_gazebo sim.launch.py robot:=astribot record:=true
+ros2 launch sim_gazebo sim.launch.py robot:=astribot rosbag:=true
 
 # SQLite3 format
-ros2 launch sim_gazebo sim.launch.py record:=true bag_format:=sqlite3
+ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_format:=sqlite3
 
 # Custom output path
-ros2 launch sim_gazebo sim.launch.py record:=true bag_path:=/workspace/bags/test_run
+ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/test_run
 ```
 
 Bags land in `sim_robo/bags/` on your Mac (volume-mounted from `/workspace/bags/` inside the container).

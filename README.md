@@ -103,7 +103,9 @@ If you want to run the Python monitoring and control scripts:
 ```bash
 # Inside the container (or on macOS if running scripts locally)
 cd /workspace
-uv sync
+# Pin to system Python 3.10 so rclpy C extensions are compatible
+uv sync --python /usr/bin/python3
+source .venv/bin/activate
 ```
 
 This installs pure Python dependencies like `rich` (terminal UI library). ROS2 packages (`rclpy`, `sensor_msgs`) come from the system installation and don't need to be installed separately.
@@ -141,13 +143,13 @@ ros2 launch sim_gazebo sim.launch.py gui:=false
 ros2 launch sim_gazebo sim.launch.py paused:=true
 
 # Record all sensor topics to MCAP bag file
-ros2 launch sim_gazebo sim.launch.py record:=true
+ros2 launch sim_gazebo sim.launch.py rosbag:=true
 
 # Record to SQLite3 format instead
-ros2 launch sim_gazebo sim.launch.py record:=true bag_format:=sqlite3
+ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_format:=sqlite3
 
 # Custom bag output path
-ros2 launch sim_gazebo sim.launch.py record:=true bag_path:=/workspace/bags/my_experiment.mcap
+ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/my_experiment.mcap
 
 # RViz2 robot preview only (no physics simulation)
 ros2 launch g1_description display.launch.py
@@ -161,7 +163,7 @@ ros2 launch astribot_description display.launch.py
 | `robot` | `g1` | `g1`, `astribot` |
 | `gui` | `true` | `true`, `false` |
 | `paused` | `false` | `true`, `false` |
-| `record` | `false` | `true`, `false` |
+| `rosbag` | `false` | `true`, `false` |
 | `bag_format` | `mcap` | `mcap`, `sqlite3` |
 | `bag_path` | *(auto)* | any path |
 
@@ -244,7 +246,9 @@ docker compose run --service-ports sim bash -c "
 docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
-  cd /workspace && uv sync --quiet &&
+  cd /workspace &&
+  uv sync --python /usr/bin/python3 --quiet &&
+  source .venv/bin/activate &&
   python3 src/robot_control/robot_monitor.py"
 ```
 
@@ -264,7 +268,7 @@ docker compose run --service-ports sim bash -c "
 conda create -n ros2 python=3.10
 conda activate ros2
 conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-sensor-msgs
-uv sync
+uv sync  # uses conda's Python automatically
 
 # Every session:
 conda activate ros2

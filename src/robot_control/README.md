@@ -10,8 +10,10 @@ Dependencies are managed by [uv](https://docs.astral.sh/uv/) via the root `pypro
 # Inside the Docker container or on macOS with ROS2
 
 # Install dependencies (run from project root)
+# Pin to system Python 3.10 so rclpy C extensions are compatible
 cd /workspace  # or project root on macOS
-uv sync
+uv sync --python /usr/bin/python3
+source .venv/bin/activate
 
 # Run the monitor
 python3 src/robot_control/robot_monitor.py
@@ -32,7 +34,10 @@ docker compose run --service-ports sim bash /workspace/start_sim.sh
 docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
-  cd /workspace && python3 src/robot_control/robot_monitor.py"
+  cd /workspace &&
+  uv sync --python /usr/bin/python3 --quiet &&
+  source .venv/bin/activate &&
+  python3 src/robot_control/robot_monitor.py"
 ```
 
 **Headless (no GUI):**
@@ -47,7 +52,10 @@ docker compose run --service-ports sim bash -c "
 docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
-  cd /workspace && python3 src/robot_control/robot_monitor.py"
+  cd /workspace &&
+  uv sync --python /usr/bin/python3 --quiet &&
+  source .venv/bin/activate &&
+  python3 src/robot_control/robot_monitor.py"
 ```
 
 ## Scripts

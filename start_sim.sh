@@ -17,4 +17,4 @@ echo "VNC server running on port 5900 — connect with any VNC viewer to localho
 # 3. Source ROS and launch simulation
 source /opt/ros/humble/setup.bash
 source /workspace/install/setup.bash
-ros2 launch g1_gazebo g1_sim.launch.py
+ros2 launch sim_gazebo sim.launch.py

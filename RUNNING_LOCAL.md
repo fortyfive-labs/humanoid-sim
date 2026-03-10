@@ -71,7 +71,10 @@ docker compose run --service-ports sim bash /workspace/start_sim.sh
 docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
-  cd /workspace && python3 src/robot_control/robot_monitor.py"
+  cd /workspace &&
+  uv sync --python /usr/bin/python3 --quiet &&
+  source .venv/bin/activate &&
+  python3 src/robot_control/robot_monitor.py"
 ```
 
 ## Networking Notes
