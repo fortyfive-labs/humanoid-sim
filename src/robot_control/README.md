@@ -6,13 +6,12 @@ Python scripts for monitoring and controlling robots in the humanoid-sim environ
 
 Dependencies are managed by [uv](https://docs.astral.sh/uv/) via the root `pyproject.toml`, while ROS2 packages (rclpy, sensor_msgs) come from the system installation.
 
-```bash
-# Inside the Docker container or on macOS with ROS2
+**Inside Docker (recommended):**
 
-# Install dependencies (run from project root)
-# Pin to system Python 3.10 so rclpy C extensions are compatible
-cd /workspace  # or project root on macOS
-uv sync --python /usr/bin/python3
+```bash
+# Run from project root inside the container
+cd /workspace
+uv sync --python /usr/bin/python3   # pin to ROS2's Python 3.10
 source .venv/bin/activate
 
 # Run the monitor
@@ -21,6 +20,8 @@ python3 src/robot_control/robot_monitor.py
 # Or use the convenience script
 ./src/robot_control/run.sh
 ```
+
+**On macOS (locally):** See [RUNNING_LOCAL.md](../../RUNNING_LOCAL.md) for conda or Homebrew setup.
 
 ## Running with the Simulation
 
@@ -75,5 +76,6 @@ The script also sends simple wave commands to the robot's right arm.
 ## Dependencies
 
 - `rich` - Terminal UI library (installed via uv)
+- `numpy` - Required by `sensor_msgs` internals (installed via uv)
 - `rclpy` - ROS2 Python client (provided by ROS2 Humble system installation)
 - `sensor_msgs` - ROS2 sensor message types (provided by ROS2 system installation)
