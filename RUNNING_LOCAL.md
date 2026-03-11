@@ -8,11 +8,12 @@ To run the robot monitor script natively on macOS (outside Docker), you need ROS
 
 ```bash
 # Create a ROS2 environment
-conda create -n ros2 python=3.11
+conda create -n ros2 python=3.10
 conda activate ros2
 
 # Install ROS2 Humble packages
-conda install -c robostack-staging ros-humble-desktop
+conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-sensor-msgs
+pip install rich  # pure Python deps for the monitor script
 ```
 
 ### Option B: Install ROS2 via Homebrew
@@ -49,14 +50,8 @@ docker compose run --service-ports sim bash -c "
 conda activate ros2
 export ROS_DOMAIN_ID=42
 
-# Install dependencies with uv (one-time)
-uv sync
-
-# Run the monitor
+# Run the monitor (rich is installed in conda env, rclpy is available via conda)
 python3 src/robot_control/robot_monitor.py
-
-# Or use the convenience script:
-./src/robot_control/run.sh
 ```
 
 ## Alternative: Use Docker Exec (No Local Install)

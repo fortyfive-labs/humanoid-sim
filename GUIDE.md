@@ -28,17 +28,19 @@ cd /path/to/sim_robo
 docker compose build
 ```
 
-### Before every session — allow X11 connections
+### Viewing the Gazebo GUI (VNC)
 
-Even in headless mode (`gui:=false`) this is needed to connect to the container:
+To see Gazebo visually, use the VNC-based launcher instead of plain `bash`:
 
 ```bash
-# On macOS host (not inside Docker)
-xhost +localhost
+docker compose run --service-ports sim bash /workspace/start_sim.sh
 ```
 
-> If you also want to see Gazebo/RViz2 visually, install XQuartz first:
-> `brew install --cask xquartz`, then enable **XQuartz → Preferences → Security → Allow connections from network clients**, and log out/back in.
+Then open **TigerVNC Viewer** (`brew install --cask tigervnc-viewer`) and connect to `localhost:5900`.
+
+> **Note:** Under software rendering (no GPU), the Gazebo window takes **3–5 minutes** to appear after startup. The simulation is running even while the window is loading — sensor topics publish as soon as the robot spawns (~90 s).
+
+> **XQuartz / X11 forwarding does not work** on Apple Silicon Macs for this simulation — Gazebo's OpenGL renderer crashes when forwarded over XQuartz. Use VNC instead.
 
 ---
 
@@ -158,8 +160,8 @@ ros2 topic info /points
 
 ```bash
 # Open a second shell into the running container
-docker exec -it sim_robo bash
-# (or: docker compose exec sim bash)
+docker compose exec sim bash
+# or, if you know the container ID: docker exec -it <container_id> bash
 export DISPLAY=:99
 source /opt/ros/humble/setup.bash && source /workspace/install/setup.bash
 ros2 topic echo /imu/data

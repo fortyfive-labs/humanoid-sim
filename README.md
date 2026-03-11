@@ -94,7 +94,7 @@ The `colcon build` command compiles the C++ and Python ROS2 packages in `src/`. 
 - `g1_description` and `astribot_description` - Robot URDF models with sensors
 - `g1_gazebo` - Gazebo world files
 - `sim_gazebo` - Multi-robot launch system
-- `g1_apps` - Example C++ nodes for subscribing and control
+- `g1_apps` - Example Python nodes for subscribing and control
 
 ### 5. (Optional) Install Python dependencies
 
@@ -200,12 +200,14 @@ ros2 topic info /imu/data --verbose
 
 All sensor topics should publish at the following rates:
 - `/camera/image_raw` - 30 Hz
-- `/camera/depth/image_raw` - 30 Hz
-- `/camera/depth/points` - 30 Hz
-- `/imu/data` - 100 Hz
-- `/scan` - 40 Hz (2D LiDAR)
+- `/camera/depth/image_raw` - 15 Hz
+- `/camera/depth/points` - 15 Hz
+- `/imu/data` - 200 Hz
+- `/scan` - 15 Hz (2D LiDAR)
 - `/points` - 10 Hz (3D LiDAR)
 - `/joint_states` - 50 Hz
+
+> **Note:** Actual rates under software rendering (no GPU) may be lower — this is normal for Docker on macOS.
 
 If topics aren't appearing, wait ~90 seconds for gzserver to fully initialize on first launch. The robot model must spawn before sensors activate.
 
@@ -268,7 +270,7 @@ docker compose run --service-ports sim bash -c "
 conda create -n ros2 python=3.10
 conda activate ros2
 conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-sensor-msgs
-uv sync  # uses conda's Python automatically
+pip install rich  # install pure Python deps into the conda env
 
 # Every session:
 conda activate ros2
@@ -285,9 +287,7 @@ See [RUNNING_LOCAL.md](RUNNING_LOCAL.md) for complete instructions on setting up
 | Script | Description |
 |--------|-------------|
 | `robot_monitor.py` | Live sensor dashboard + simple arm wave control |
-| `run.sh` | Convenience wrapper that runs `uv sync` then launches the monitor |
-
-All scripts are standalone with inline PEP 723 dependency declarations, so they can be run with `uv run --system script.py` if preferred.
+| `run.sh` | Convenience wrapper for Docker: runs `uv sync --python /usr/bin/python3` then launches the monitor |
 
 ---
 
