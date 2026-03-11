@@ -216,7 +216,7 @@ client.terminate()
 ### Automatic recording via launch argument
 
 ```bash
-# MCAP format (default) — auto-named: /workspace/bags/<robot>_<YYYYMMDD_HHMMSS>/
+# MCAP format (default) — auto-named: /workspace/bags/<robot>_<YYYYMMDD_HHMMSS>
 ros2 launch sim_gazebo sim.launch.py robot:=astribot rosbag:=true
 
 # SQLite3 format
@@ -336,18 +336,29 @@ ros2 run g1_apps sensor_monitor
 ros2 run g1_apps joint_commander
 ```
 
-The only flag to change is `use_sim_time`:
-
-```python
-# In your node, when creating:
-Node(use_sim_time=False)   # real robot
-Node(use_sim_time=True)    # simulation
-```
-
-Or pass it at runtime:
+The only flag to change is `use_sim_time`. Pass it at runtime:
 
 ```bash
 ros2 run g1_apps sensor_monitor --ros-args -p use_sim_time:=false
+```
+
+Or set it inside your node's constructor:
+
+```python
+import rclpy.parameter
+
+class MyNode(Node):
+    def __init__(self):
+        super().__init__(
+            'my_node',
+            parameter_overrides=[
+                rclpy.parameter.Parameter(
+                    'use_sim_time',
+                    rclpy.parameter.Parameter.Type.BOOL,
+                    False,   # True for simulation, False for real robot
+                )
+            ],
+        )
 ```
 
 #### Key differences to be aware of
