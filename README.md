@@ -18,7 +18,7 @@ Each robot ships with five sensors:
 | `/scan` | `LaserScan` | 2D LiDAR |
 | `/points` | `PointCloud2` | 3D LiDAR |
 | `/camera/image_raw` | `Image` | RGB camera |
-| `/camera/depth/image_raw` | `Image` | Depth image |
+| `/camera/depth/depth/image_raw` | `Image` | Depth image (32FC1, metres) |
 | `/camera/depth/points` | `PointCloud2` | Depth point cloud |
 | `/imu/data` | `Imu` | IMU |
 | `/joint_states` | `JointState` | All joints |
@@ -207,7 +207,7 @@ ros2 topic info /imu/data --verbose
 
 All sensor topics should publish at the following rates:
 - `/camera/image_raw` - 30 Hz
-- `/camera/depth/image_raw` - 15 Hz
+- `/camera/depth/depth/image_raw` - 15 Hz (32FC1 depth values)
 - `/camera/depth/points` - 15 Hz
 - `/imu/data` - 200 Hz
 - `/scan` - 15 Hz (2D LiDAR)

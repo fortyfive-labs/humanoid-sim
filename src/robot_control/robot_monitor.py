@@ -64,7 +64,7 @@ class SimpleRobotController(Node):
 
         # Subscribe to sensors
         self.create_subscription(Image, '/camera/image_raw', self._camera_callback, SENSOR_QOS)
-        self.create_subscription(Image, '/camera/depth/image_raw', self._depth_callback, SENSOR_QOS)
+        self.create_subscription(Image, '/camera/depth/depth/image_raw', self._depth_callback, SENSOR_QOS)
         self.create_subscription(Imu, '/imu/data', self._imu_callback, SENSOR_QOS)
         self.create_subscription(LaserScan, '/scan', self._lidar_2d_callback, SENSOR_QOS)
         self.create_subscription(PointCloud2, '/points', self._lidar_3d_callback, SENSOR_QOS)
@@ -165,7 +165,7 @@ class SimpleRobotController(Node):
             self._add_row(table, "📷 /camera/image_raw", self._sensor_data['camera'])
 
             # Depth camera
-            self._add_row(table, "🔲 /camera/depth/image_raw", self._sensor_data['depth'])
+            self._add_row(table, "🔲 /camera/depth/depth/image_raw", self._sensor_data['depth'])
 
             # IMU
             self._add_row(table, "📡 /imu/data", self._sensor_data['imu'])

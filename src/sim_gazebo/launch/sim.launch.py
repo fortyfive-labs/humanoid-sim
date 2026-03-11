@@ -52,7 +52,7 @@ RECORD_TOPICS = [
     '/points',
     '/imu/data',
     '/camera/image_raw',
-    '/camera/depth/image_raw',
+    '/camera/depth/depth/image_raw',
     '/camera/depth/points',
     '/joint_states',
     '/tf',

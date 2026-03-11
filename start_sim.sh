@@ -7,6 +7,13 @@
 
 set -e
 
+# Guard: workspace must be built before launching
+if [ ! -f /workspace/install/setup.bash ]; then
+    echo "ERROR: ROS2 workspace not built."
+    echo "Run 'docker compose run --rm sim bash' then 'colcon build && source install/setup.bash' first."
+    exit 1
+fi
+
 # 1. Start VNC server — no password, port 5900
 #    Xvfb :99 is already running (started by /entrypoint.sh at container startup).
 x11vnc -display :99 -forever -nopw -rfbport 5900 -quiet &
