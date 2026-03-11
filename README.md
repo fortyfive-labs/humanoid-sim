@@ -118,7 +118,7 @@ This installs pure Python dependencies like `rich` (terminal UI library). ROS2 p
 
 ```bash
 # Start the simulation with VNC display
-docker compose run --service-ports sim bash /workspace/start_sim.sh
+docker compose run --rm --service-ports sim bash /workspace/start_sim.sh
 ```
 
 Then open **TigerVNC Viewer** and connect to `localhost:5900`.
@@ -244,7 +244,7 @@ The script also sends sinusoidal joint commands to make the robot wave its right
 
 ```bash
 # Terminal 1: Launch the simulation (headless, no VNC needed for monitor-only)
-docker compose run --service-ports sim bash -c "
+docker compose run --rm --service-ports sim bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
   ros2 launch sim_gazebo sim.launch.py gui:=false"
@@ -265,7 +265,7 @@ You can run the Python script natively on macOS while the simulation runs in Doc
 
 ```bash
 # Terminal 1: Start simulation in Docker (headless)
-docker compose run --service-ports sim bash -c "
+docker compose run --rm --service-ports sim bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
   ros2 launch sim_gazebo sim.launch.py gui:=false"

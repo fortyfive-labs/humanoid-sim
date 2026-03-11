@@ -47,7 +47,7 @@ This script sources the Homebrew ROS2 environment, sets `ROS_DOMAIN_ID=42`, and 
 
 ```bash
 # Terminal 1: Start simulation in Docker (headless — no GUI needed for monitor)
-docker compose run --service-ports sim bash -c "
+docker compose run --rm --service-ports sim bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
   ros2 launch sim_gazebo sim.launch.py gui:=false"
@@ -67,7 +67,7 @@ If you don't want to install ROS2 locally, run everything inside the container:
 
 ```bash
 # Terminal 1: Start simulation (with or without GUI)
-docker compose run --service-ports sim bash /workspace/start_sim.sh
+docker compose run --rm --service-ports sim bash /workspace/start_sim.sh
 
 # Terminal 2: Run the monitor inside the same container
 docker exec -it $(docker ps -qf ancestor=sim_robo:humble) bash -c "

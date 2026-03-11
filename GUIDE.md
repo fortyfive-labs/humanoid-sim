@@ -33,7 +33,7 @@ docker compose build
 To see Gazebo visually, use the VNC-based launcher instead of plain `bash`:
 
 ```bash
-docker compose run --service-ports sim bash /workspace/start_sim.sh
+docker compose run --rm --service-ports sim bash /workspace/start_sim.sh
 ```
 
 Then open **TigerVNC Viewer** (`brew install --cask tigervnc-viewer`) and connect to `localhost:5900`.

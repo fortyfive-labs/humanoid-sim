@@ -14,8 +14,10 @@ This script demonstrates:
 3. Live-updating display using Rich library
 
 Usage:
-    # Inside the Docker container, after launching the simulation:
-    uv run --with-requirements <(echo rich) --system robot_monitor.py
+    # Inside the Docker container (from /workspace), after launching the simulation:
+    uv sync --python /usr/bin/python3 --quiet && source .venv/bin/activate
+    python3 src/robot_control/robot_monitor.py
+    # Or use the convenience wrapper: ./src/robot_control/run.sh
 """
 
 import math
