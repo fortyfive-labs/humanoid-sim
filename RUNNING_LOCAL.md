@@ -12,7 +12,7 @@ conda create -n ros2 python=3.10
 conda activate ros2
 
 # Install ROS2 Humble packages
-conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-sensor-msgs
+conda install -c conda-forge -c robostack-humble ros-humble-rclpy ros-humble-sensor-msgs
 pip install rich  # pure Python deps for the monitor script
 ```
 

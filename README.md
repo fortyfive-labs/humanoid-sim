@@ -274,7 +274,7 @@ docker compose run --service-ports sim bash -c "
 # One-time setup (see RUNNING_LOCAL.md for full details):
 conda create -n ros2 python=3.10
 conda activate ros2
-conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-sensor-msgs
+conda install -c conda-forge -c robostack-humble ros-humble-rclpy ros-humble-sensor-msgs
 pip install rich  # install pure Python deps into the conda env
 
 # Every session:
