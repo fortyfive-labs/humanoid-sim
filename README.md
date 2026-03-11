@@ -138,6 +138,8 @@ Topics start publishing after the robot spawns. You can verify them with `ros2 t
 ros2 launch sim_gazebo sim.launch.py
 
 # Astribot S1 with GUI
+# Note: Astribot's URDF uses .glb mesh files which Gazebo Classic doesn't render.
+# The robot spawns and all sensors publish correctly; only the 3D visual is missing.
 ros2 launch sim_gazebo sim.launch.py robot:=astribot
 
 # Headless mode (no GUI window, faster startup)

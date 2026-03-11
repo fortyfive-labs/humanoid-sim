@@ -2,6 +2,10 @@
 # Fetch the Astribot S1 URDF and meshes from fiveages-sim/robot_descriptions.
 # Run this ONCE inside the container:
 #   bash /workspace/src/astribot_description/fetch_urdf.sh
+#
+# Note: the upstream URDF uses .glb mesh files for visuals. Gazebo Classic 11
+# cannot render .glb meshes, so the robot's 3D model won't appear in Gazebo or RViz2.
+# Physics simulation and all sensor plugins work correctly regardless.
 
 set -e
 DEST=/workspace/src/astribot_description
