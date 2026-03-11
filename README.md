@@ -294,6 +294,7 @@ See [RUNNING_LOCAL.md](RUNNING_LOCAL.md) for complete instructions on setting up
 |--------|-------------|
 | `robot_monitor.py` | Live sensor dashboard + simple arm wave control |
 | `run.sh` | Convenience wrapper for Docker: runs `uv sync --python /usr/bin/python3` then launches the monitor |
+| `run_monitor_local.sh` | Convenience wrapper for macOS with Homebrew ROS2: sources ROS2, sets `ROS_DOMAIN_ID=42`, runs the monitor via `uv run --system` |
 
 ---
 
@@ -304,6 +305,9 @@ humanoid-sim/
 ├── Dockerfile                     # Ubuntu 22.04 + ROS2 Humble + Gazebo Classic
 ├── docker-compose.yml
 ├── entrypoint.sh
+├── start_sim.sh                   # Launch script: starts Xvfb+VNC then runs sim.launch.py
+├── run_monitor_local.sh           # macOS convenience: source Homebrew ROS2 + run monitor
+├── pyproject.toml                 # Python dependencies (rich, numpy) managed by uv
 ├── GUIDE.md                       # Full reference: launch, subscribe, record, real robot
 └── src/
     ├── g1_description/            # Unitree G1 URDF, meshes, sensor XACRO

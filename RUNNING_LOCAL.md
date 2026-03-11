@@ -34,6 +34,15 @@ source /opt/homebrew/opt/ros-humble/setup.bash  # for bash
 pip install rich
 ```
 
+After setup, you can use the convenience script at the project root instead of the manual steps below:
+
+```bash
+cd /path/to/humanoid-sim
+./run_monitor_local.sh
+```
+
+This script sources the Homebrew ROS2 environment, sets `ROS_DOMAIN_ID=42`, and runs the monitor via `uv run --system` (which installs `rich` automatically from the script metadata).
+
 ## Running Locally
 
 ```bash
