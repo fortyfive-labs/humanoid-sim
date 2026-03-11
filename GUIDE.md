@@ -173,7 +173,7 @@ Use **rosbridge** if you want to subscribe from a Mac Python script without inst
 
 ```bash
 # Inside the container (one-time)
-apt-get install -y ros-humble-rosbridge-suite
+apt-get update && apt-get install -y ros-humble-rosbridge-suite
 ```
 
 **Step 2 — run rosbridge alongside the simulation:**

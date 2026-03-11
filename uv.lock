@@ -18,7 +18,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "numpy", specifier = ">=1.21.5" },
+    { name = "numpy", specifier = ">=2.0" },
     { name = "rich", specifier = ">=14.3.3" },
 ]
 
