@@ -88,7 +88,7 @@ colcon build
 source install/setup.bash
 ```
 
-The `colcon build` command compiles the C++ and Python ROS2 packages in `src/`. This step takes ~30 seconds and only needs to be repeated if you modify the package source code.
+The `colcon build` command compiles the Python ROS2 packages in `src/`. This step takes ~30 seconds and only needs to be repeated if you modify the package source code.
 
 **What gets built:**
 - `g1_description` and `astribot_description` - Robot URDF models with sensors
@@ -101,7 +101,7 @@ The `colcon build` command compiles the C++ and Python ROS2 packages in `src/`. 
 If you want to run the Python monitoring and control scripts:
 
 ```bash
-# Inside the container (or on macOS if running scripts locally)
+# Inside the container
 cd /workspace
 # Pin to system Python 3.10 so rclpy C extensions are compatible
 uv sync --python /usr/bin/python3

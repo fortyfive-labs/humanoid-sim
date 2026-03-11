@@ -161,7 +161,6 @@ ros2 topic info /points
 # Open a second shell into the running container
 docker compose exec sim bash
 # or, if you know the container ID: docker exec -it <container_id> bash
-export DISPLAY=:99
 source /opt/ros/humble/setup.bash && source /workspace/install/setup.bash
 ros2 topic echo /imu/data
 ```
