@@ -12,7 +12,7 @@ fi
 # not provide the Mesa fbConfigs Gazebo requires, so we use the virtual fb.
 # Users who want the Gazebo GUI on their Mac screen can re-export DISPLAY
 # after entering the container (e.g. export DISPLAY=host.docker.internal:0).
-Xvfb :99 -screen 0 1280x1024x24 -ac +extension GLX +render -noreset &
+Xvfb :99 -screen 0 1600x1000x24 -ac +extension GLX +render -noreset &
 for i in $(seq 1 20); do
     xdpyinfo -display :99 >/dev/null 2>&1 && break
     sleep 0.2

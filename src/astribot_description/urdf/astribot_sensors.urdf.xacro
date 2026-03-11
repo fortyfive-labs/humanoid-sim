@@ -143,7 +143,7 @@
 
   <!-- 3D LiDAR → /points -->
   <gazebo reference="mid360_link">
-    <sensor name="mid360" type="ray">
+    <sensor name="mid360" type="gpu_ray">
       <always_on>true</always_on>
       <update_rate>10</update_rate>
       <visualize>false</visualize>
