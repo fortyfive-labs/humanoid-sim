@@ -55,10 +55,9 @@ docker compose run --rm sim bash
 
 This drops you into a shell at `/workspace` with ROS2 sourced.
 
-> **Important for `docker exec` sessions:** `docker exec` bypasses the entrypoint and does not set `DISPLAY=:99` automatically.
-> Always start `docker exec` commands with:
+> **Note for `docker exec` sessions:** `DISPLAY=:99` is set automatically (from `docker-compose.yml` environment), but the ROS2 workspace is not sourced. Always include the source commands:
 > ```bash
-> docker exec <container_name> bash -c "export DISPLAY=:99; source /opt/ros/humble/setup.bash; source /workspace/install/setup.bash; ..."
+> docker exec <container_id> bash -c "source /opt/ros/humble/setup.bash; source /workspace/install/setup.bash; ..."
 > ```
 
 ### Build packages (only needed after code changes)
@@ -183,7 +182,7 @@ apt-get install -y ros-humble-rosbridge-suite
 ```bash
 # Inside the container (separate terminal)
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
-# Listens on ws://localhost:9090
+# Listens on ws://localhost:9090 (port 9090 is pre-exposed in docker-compose.yml)
 ```
 
 **Step 3 — subscribe from macOS Python:**

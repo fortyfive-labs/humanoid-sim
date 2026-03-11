@@ -15,6 +15,7 @@ services:
     ports:
       - "5900:5900"                # VNC viewer
       - "7400-7500:7400-7500/udp"  # DDS Discovery and Data
+      - "9090:9090"                # rosbridge WebSocket (optional)
     stdin_open: true
     tty: true
 

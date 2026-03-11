@@ -163,6 +163,7 @@ ros2 launch astribot_description display.launch.py
 | `robot` | `g1` | `g1`, `astribot` |
 | `gui` | `true` | `true`, `false` |
 | `paused` | `false` | `true`, `false` |
+| `use_sim_time` | `true` | `true`, `false` |
 | `rosbag` | `false` | `true`, `false` |
 | `bag_format` | `mcap` | `mcap`, `sqlite3` |
 | `bag_path` | *(auto)* | any path |
