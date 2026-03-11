@@ -148,8 +148,8 @@ ros2 launch sim_gazebo sim.launch.py rosbag:=true
 # Record to SQLite3 format instead
 ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_format:=sqlite3
 
-# Custom bag output path
-ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/my_experiment.mcap
+# Custom bag output path (bag_path is a directory name, not a file)
+ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/my_experiment
 
 # RViz2 robot preview only (no physics simulation)
 ros2 launch g1_description display.launch.py

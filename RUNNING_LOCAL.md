@@ -1,6 +1,6 @@
 # Running Python Scripts Locally (macOS)
 
-To run the robot monitor script natively on macOS (outside Docker), you need ROS2 installed. We'll use **Conda or Homebrew for ROS2** and **uv for Python dependencies**.
+To run the robot monitor script natively on macOS (outside Docker), you need ROS2 installed. We'll use **Conda or Homebrew for ROS2**.
 
 ## Setup (one-time)
 
@@ -29,12 +29,9 @@ brew install ros-humble-desktop
 source /opt/homebrew/opt/ros-humble/setup.zsh  # for zsh
 # or
 source /opt/homebrew/opt/ros-humble/setup.bash  # for bash
-```
 
-### Install uv (if you don't have it)
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install pure Python deps
+pip install rich
 ```
 
 ## Running Locally
