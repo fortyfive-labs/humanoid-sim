@@ -235,7 +235,9 @@ Bags land in `sim_robo/bags/` on your Mac (volume-mounted from `/workspace/bags/
 ```bash
 # Inside the container
 ros2 bag record -s mcap -o /workspace/bags/my_bag \
-    /scan /points /imu/data /camera/image_raw /joint_states /tf /tf_static /clock
+    /scan /points /imu/data /camera/image_raw \
+    /camera/depth/image_raw /camera/depth/points \
+    /joint_states /tf /tf_static /clock
 
 # Record everything
 ros2 bag record -s mcap -a -o /workspace/bags/everything
