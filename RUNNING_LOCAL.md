@@ -44,6 +44,7 @@ docker compose run --service-ports sim bash -c "
   ros2 launch sim_gazebo sim.launch.py gui:=false"
 
 # Terminal 2: Run monitor locally on macOS
+cd /path/to/humanoid-sim   # must be in the project root
 conda activate ros2
 export ROS_DOMAIN_ID=42
 

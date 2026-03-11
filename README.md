@@ -121,9 +121,13 @@ This installs pure Python dependencies like `rich` (terminal UI library). ROS2 p
 docker compose run --service-ports sim bash /workspace/start_sim.sh
 ```
 
-Then open **TigerVNC Viewer** and connect to `localhost:5900` — the Gazebo window will appear.
+Then open **TigerVNC Viewer** and connect to `localhost:5900`.
 
-**First launch takes ~90 seconds** while gzserver initializes (software rendering, no GPU acceleration). Subsequent launches are faster (~10 seconds).
+**First launch timing:**
+- ~90 seconds for gzserver to initialize and sensor topics to start publishing
+- ~3–5 minutes for the Gazebo window to appear in VNC (OGRE shader compilation under software rendering — normal, not a crash)
+
+Subsequent launches are faster (~30–60 seconds for topics, window appears sooner once shaders are cached).
 
 Topics start publishing after the robot spawns. You can verify them with `ros2 topic list`.
 
