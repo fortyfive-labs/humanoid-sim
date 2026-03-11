@@ -127,7 +127,7 @@ Then open **TigerVNC Viewer** and connect to `localhost:5900`.
 - ~90 seconds for gzserver to initialize and sensor topics to start publishing
 - ~3–5 minutes for the Gazebo window to appear in VNC (OGRE shader compilation under software rendering — normal, not a crash)
 
-Subsequent launches are faster (~30–60 seconds for topics, window appears sooner once shaders are cached).
+Subsequent launches are faster (~90 seconds for topics once Gazebo model cache is warm, window appears sooner once shaders are cached).
 
 Topics start publishing after the robot spawns. You can verify them with `ros2 topic list`.
 
@@ -278,6 +278,7 @@ conda install -c robostack-staging -c conda-forge ros-humble-rclpy ros-humble-se
 pip install rich  # install pure Python deps into the conda env
 
 # Every session:
+cd /path/to/humanoid-sim   # must be in the project root
 conda activate ros2
 export ROS_DOMAIN_ID=42
 python3 src/robot_control/robot_monitor.py
