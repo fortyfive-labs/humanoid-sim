@@ -128,8 +128,8 @@ Startup time is ~90 s on a warm cache (models already downloaded).
 | `/scan` | `sensor_msgs/LaserScan` | 15 Hz | 2D LiDAR, 360° |
 | `/points` | `sensor_msgs/PointCloud2` | 10 Hz | 3D LiDAR (sparse, wide FOV) |
 | `/camera/image_raw` | `sensor_msgs/Image` | 30 Hz | RGB camera 640×480 |
-| `/camera/depth/depth/image_raw` | `sensor_msgs/Image` | 15 Hz | Depth image (32FC1, metres) |
-| `/camera/depth/points` | `sensor_msgs/PointCloud2` | 15 Hz | Dense point cloud from depth camera |
+| `/camera/rgbd/depth/image_raw` | `sensor_msgs/Image` | 15 Hz | Depth image (32FC1, metres) |
+| `/camera/rgbd/points` | `sensor_msgs/PointCloud2` | 15 Hz | Dense point cloud from depth camera |
 | `/imu/data` | `sensor_msgs/Imu` | 200 Hz | IMU |
 | `/joint_states` | `sensor_msgs/JointState` | 50 Hz | All DOF positions |
 | `/tf` | `tf2_msgs/TFMessage` | — | Transform tree |
@@ -228,7 +228,7 @@ ros2 launch sim_gazebo sim.launch.py rosbag:=true bag_path:=/workspace/bags/test
 
 Bags land in `sim_robo/bags/` on your Mac (volume-mounted from `/workspace/bags/` inside the container).
 
-**Topics recorded:** `/scan`, `/points`, `/imu/data`, `/camera/image_raw`, `/camera/depth/depth/image_raw`, `/camera/depth/points`, `/joint_states`, `/tf`, `/tf_static`, `/clock`
+**Topics recorded:** `/scan`, `/points`, `/imu/data`, `/camera/image_raw`, `/camera/rgbd/depth/image_raw`, `/camera/rgbd/points`, `/joint_states`, `/tf`, `/tf_static`, `/clock`
 
 ### Manual recording (any topics, any time)
 
@@ -236,7 +236,7 @@ Bags land in `sim_robo/bags/` on your Mac (volume-mounted from `/workspace/bags/
 # Inside the container
 ros2 bag record -s mcap -o /workspace/bags/my_bag \
     /scan /points /imu/data /camera/image_raw \
-    /camera/depth/depth/image_raw /camera/depth/points \
+    /camera/rgbd/depth/image_raw /camera/rgbd/points \
     /joint_states /tf /tf_static /clock
 
 # Record everything

@@ -222,14 +222,14 @@
       <plugin name="depth_camera_plugin" filename="libgazebo_ros_camera.so">
         <ros>
           <namespace>/camera</namespace>
-          <!-- NOTE: libgazebo_ros_camera always appends a "depth/" sub-namespace
-               for the actual depth buffer. With camera_name="depth" the topics are:
-                 /camera/depth/image_raw        — visual BGR image (not depth values)
-                 /camera/depth/depth/image_raw  — actual 32FC1 depth image
-                 /camera/depth/points           — depth pointcloud (correct, used by default)
-          -->
+          <!-- camera_name="rgbd" + plugin-appended "depth/" sub-namespace gives:
+                 /camera/rgbd/image_raw        — visual BGR image
+                 /camera/rgbd/depth/image_raw  — actual 32FC1 depth image
+                 /camera/rgbd/points           — depth pointcloud
+               (Using camera_name="depth" would produce the confusing double-depth
+                topic /camera/depth/depth/image_raw, hence "rgbd" is used instead.) -->
         </ros>
-        <camera_name>depth</camera_name>
+        <camera_name>rgbd</camera_name>
         <frame_name>d435_link</frame_name>
         <min_depth>0.1</min_depth>
         <max_depth>10.0</max_depth>
