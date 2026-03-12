@@ -209,7 +209,13 @@
         <image>
           <width>640</width>
           <height>480</height>
-          <format>B8G8R8</format>
+          <!-- R32F is not a recognized Gazebo format and logs a harmless error
+               ("Unsupported Gazebo ImageFormat, using BGR8"), but it is required:
+               libgazebo_ros_camera.so uses the format to decide whether to enable
+               depth rendering. A color format (B8G8R8) disables depth output; an
+               unrecognized format (R32F) keeps depth mode active and publishes both
+               /camera/depth/depth/image_raw (32FC1) and /camera/depth/points. -->
+          <format>R32F</format>
         </image>
         <clip><near>0.1</near><far>10.0</far></clip>
       </camera>

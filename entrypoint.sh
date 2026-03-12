@@ -19,4 +19,12 @@ for i in $(seq 1 20); do
 done
 export DISPLAY=:99
 
+# Redirect Gazebo's OGRE RTShader cache to the persistent volume.
+# By default it lives in /tmp/gazebo-*-rtshaderlibcache/ which is lost on
+# every container restart, forcing a multi-minute shader recompilation on
+# every fresh container (depth camera won't render until it finishes).
+# Pointing TMP to /root/.gazebo/tmp keeps the compiled shaders across restarts.
+mkdir -p /root/.gazebo/tmp
+export TMP=/root/.gazebo/tmp
+
 exec "$@"
