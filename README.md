@@ -123,11 +123,13 @@ docker compose run --rm --service-ports sim bash /workspace/start_sim.sh
 
 Then open **TigerVNC Viewer** and connect to `localhost:5900`.
 
-**First launch timing:**
-- ~90 seconds for gzserver to initialize and sensor topics to start publishing
-- ~3–5 minutes for the Gazebo window to appear in VNC (OGRE shader compilation under software rendering — normal, not a crash)
+**First launch timing (ever):**
+- ~8 minutes for Gazebo to download its model database (one-time; cached in the Docker volume after this)
+- ~3–5 minutes for the Gazebo window to appear in VNC (OGRE shader compilation — one-time per volume, cached after)
+- Non-camera topics (`/scan`, `/points`, `/imu/data`, `/joint_states`) appear within seconds of robot spawn
+- Camera topics appear ~30–40 s after spawn (shader compilation; faster on subsequent runs)
 
-Subsequent launches are faster (~90 seconds for topics once Gazebo model cache is warm, window appears sooner once shaders are cached).
+**Subsequent launches** (model and shader cache warm): robot spawns in ~5 s, all topics appear within ~10 s.
 
 Topics start publishing after the robot spawns. You can verify them with `ros2 topic list`.
 

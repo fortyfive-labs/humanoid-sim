@@ -38,7 +38,7 @@ docker compose run --rm --service-ports sim bash /workspace/start_sim.sh
 
 Then open **TigerVNC Viewer** (`brew install --cask tigervnc-viewer`) and connect to `localhost:5900`.
 
-> **Note:** Under software rendering (no GPU), the Gazebo window takes **3–5 minutes** to appear after startup. The simulation is running even while the window is loading — sensor topics publish as soon as the robot spawns (~90 s).
+> **Note:** Under software rendering (no GPU), the Gazebo window takes **3–5 minutes** to appear on the **first ever launch** (OGRE shader compilation — one-time per Docker volume, cached after). The simulation is running even while the window is loading. On subsequent launches with a warm cache, the robot spawns in ~5 s and all topics appear within ~10 s.
 
 > **XQuartz / X11 forwarding does not work** on Apple Silicon Macs for this simulation — Gazebo's OpenGL renderer crashes when forwarded over XQuartz. Use VNC instead.
 
@@ -115,7 +115,7 @@ pkill -f gzserver          # stop Gazebo (Ctrl-C the launch if it's in the foreg
 ros2 launch sim_gazebo sim.launch.py robot:=astribot gui:=false   # relaunch
 ```
 
-Startup time is ~90 s on a warm cache (models already downloaded).
+Startup time is ~5–10 s on a warm cache (models and shaders already downloaded).
 
 ---
 
