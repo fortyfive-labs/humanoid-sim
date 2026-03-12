@@ -4,8 +4,9 @@
 #   bash /workspace/src/astribot_description/fetch_urdf.sh
 #
 # Note: the upstream URDF uses .glb mesh files for visuals. Gazebo Classic 11
-# cannot render .glb meshes, so the robot's 3D model won't appear in Gazebo or RViz2.
-# Physics simulation and all sensor plugins work correctly regardless.
+# cannot render .glb meshes. After running this script, re-run the mesh fix script
+# (or manually replace <mesh> visual elements with geometric primitives) so the
+# robot appears in Gazebo as simple shapes rather than producing a black scene.
 
 set -e
 DEST=/workspace/src/astribot_description
